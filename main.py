@@ -6,9 +6,10 @@ import random
 import seaborn as sns
 from sklearn.model_selection import train_test_split
 from sklearn.naive_bayes import GaussianNB
+import time
 
 
-# User-Define Functions ========================================================
+# User-Defined Functions =======================================================
 
 def save_heatmap(dataframe, filename, show=False):
     sns.heatmap(dataframe.corr())
@@ -60,7 +61,8 @@ save_heatmap(model_original_inputs, 'model_original_heatmap.png')
 # Model with correlated features
 model_1 = GaussianNB()
 model_1_features = ['X_Minimum', 'X_Maximum', 'Y_Minimum', 'Y_Maximum',
-            'Pixels_Areas', 'X_Perimeter', 'Y_Perimeter']
+                    'Pixels_Areas', 'X_Perimeter', 'Y_Perimeter', 'LogOfAreas',
+                    'Log_X_Index', 'Log_Y_Index', 'SigmoidOfAreas']
 model_1_inputs = steel_data[model_1_features]
 save_heatmap(model_1_inputs, 'model_1_heatmap.png')
 
@@ -126,15 +128,17 @@ print()
 model_2_accuracy = np.zeros((2, iterations))
 
 for i in range(iterations):
+    state_seed = random.randrange(100)
+
     # Use 5% as a test size
     training_inputs, test_inputs, training_targets, test_targets = \
-            train_test_split(model_2_inputs, targets, test_size = 0.05)
+            train_test_split(model_2_inputs, targets, test_size = 0.05, random_state = state_seed)
     model_2.fit(training_inputs, training_targets)
     model_2_accuracy[0, i] = model_2.score(test_inputs, test_targets)
 
     # Use 20% as a test size
     training_inputs, test_inputs, training_targets, test_targets = \
-            train_test_split(model_2_inputs, targets, test_size = 0.2)
+            train_test_split(model_2_inputs, targets, test_size = 0.2, random_state = state_seed)
     model_2.fit(training_inputs, training_targets)
     model_2_accuracy[1, i] = model_2.score(test_inputs, test_targets)
 
@@ -165,7 +169,7 @@ for i in range(len(targets)):
 
 true_positive_rate = true_positives / (true_positives + false_negatives)
 
-# Prediction Statistics
+# Prediction Statistics ========================================================
 print('===== Prediction Table =====')
 print('\tPastry\t\tZ Scratch\tK Scratch\tStains\t\tDirtiness\tBumps\t\tOther Faults')
 print(f'TP\t{true_positives[0]}\t\t{true_positives[1]}\t\t{true_positives[2]}\t\t{true_positives[3]}\t\t{true_positives[4]}\t\t{true_positives[5]}\t\t{true_positives[6]}')
